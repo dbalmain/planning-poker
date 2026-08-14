@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planning poker</title>
+    <script src="/theme-init.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="site-header">
+        <div class="header-lede">
+          <a class="site-title" href="/" id="site-title">Planning poker</a>
+          <p class="share-line" id="share-line" hidden>
+            Share the
+            <button class="copy-link" type="button" id="copy" aria-label="Copy join link">
+              <span class="copy-label">link</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                />
+              </svg>
+            </button>
+            — anyone can join.
+          </p>
+        </div>
+        <nav class="nav" aria-label="Page">
+          <a class="nav-link" id="history-link" hidden>History</a>
+          <button
+            class="btn btn-secondary btn-icon"
+            id="theme-toggle"
+            type="button"
+            aria-label="Switch to dark theme"
+            title="Dark theme"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                class="icon-dark-mode"
+                d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"
+              />
+              <g class="icon-light-mode">
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                />
+              </g>
+            </svg>
+          </button>
+        </nav>
+      </header>
+      <div id="app"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

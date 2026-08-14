@@ -1,0 +1,500 @@
+/* =============================================================
+   Planning poker — app styles
+   -------------------------------------------------------------
+   tokens.css and components.css are vendored from the ai-tools
+   style guide (~/w/ai-tools/style/web) via `sync-style`. They live
+   in @layer base/components, so unlayered rules below always win.
+   App rules consume tier-2 semantic vars only (--color-*, --space-*,
+   --font-*, …), never --warm-* / --accent-* primitives.
+   ============================================================= */
+
+@import "./tokens.css";
+@import "./components.css";
+
+html {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.shell {
+  width: min(var(--measure-wide), 100% - 2 * var(--space-6));
+  margin-inline: auto;
+  padding-block: 0 var(--space-12);
+}
+
+.site-header {
+  position: relative;
+  z-index: 20;
+  align-items: center;
+}
+
+.header-lede {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.nav {
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.nav-link[hidden],
+.share-line[hidden] {
+  display: none;
+}
+
+.btn-icon {
+  padding: var(--space-2);
+  line-height: 0;
+}
+
+.btn-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  max-width: none;
+  flex-shrink: 0;
+}
+
+:root:not([data-theme="dark"]) .icon-light-mode {
+  display: none;
+}
+
+:root[data-theme="dark"] .icon-dark-mode {
+  display: none;
+}
+
+.page {
+  width: min(32rem, 100%);
+  margin-inline: auto;
+  padding-block: var(--space-8);
+}
+
+.table-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 8rem);
+  padding-block: var(--space-6);
+}
+
+.card-title + .card-meta {
+  margin-bottom: var(--space-6);
+}
+
+.form-actions {
+  margin-top: var(--space-6);
+}
+
+.form-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.center-msg {
+  padding: var(--space-16) var(--space-5);
+  text-align: center;
+}
+
+.share-line {
+  color: var(--color-text-muted);
+  font-size: var(--font-size--1);
+  margin: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.copy-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.copy-link:hover {
+  color: var(--color-link-hover);
+}
+
+.copy-label {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.copy-link svg {
+  width: 0.95em;
+  height: 0.95em;
+  max-width: none;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr minmax(11rem, 15rem);
+  gap: var(--space-5);
+  align-items: end;
+  margin-top: var(--space-8);
+}
+
+/* Native <select> ignores some of .input's padding, so it sits shorter. */
+.input {
+  min-height: 2.75rem;
+  line-height: 1.25;
+}
+
+select.input {
+  appearance: none;
+  padding-right: var(--space-8);
+  background-color: var(--color-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23505550' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-4) center;
+  background-size: 1rem;
+}
+
+:root[data-theme="dark"] select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c4bfb8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+.toolbar > .field + .field {
+  margin-top: 0;
+}
+
+@media (max-width: 40rem) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  text-align: center;
+}
+
+.lonely {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size--1);
+}
+
+.table-bubble {
+  background: var(--color-action-subtle);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-size-1);
+  line-height: var(--leading-snug);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-10);
+  min-width: min(26rem, 100%);
+}
+
+.table-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+
+.result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.result-stat strong {
+  font-size: var(--font-size-3);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-tight);
+}
+
+.result-stat span {
+  font-family: var(--font-sans);
+  font-size: var(--font-size--1);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.result-hint {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-0);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  max-width: 10rem;
+}
+
+.players {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 4.5rem;
+}
+
+.player.offline {
+  opacity: 0.45;
+}
+
+.player-card {
+  width: 3.5rem;
+  height: 5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunk);
+  border: 2px solid var(--color-border);
+  display: grid;
+  place-items: center;
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-0);
+}
+
+.player-card.voted {
+  background: var(--color-border-strong);
+}
+
+.player-card.face {
+  background: var(--color-surface);
+  border-color: var(--color-action);
+  color: var(--color-action);
+}
+
+.player-card.watching {
+  background: transparent;
+  border-style: dashed;
+  color: var(--color-text-subtle);
+}
+
+.player-name {
+  font-size: var(--font-size--1);
+}
+
+.you-tag {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size--1);
+}
+
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+}
+
+.card-btn {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 5rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-action);
+  background: var(--color-surface);
+  color: var(--color-action);
+  font: var(--weight-bold) var(--font-size-0) / 1 var(--font-sans);
+  cursor: pointer;
+}
+
+.card-btn:hover {
+  background: var(--color-action-subtle);
+}
+
+.card-btn.watch {
+  border-style: dashed;
+  border-color: var(--color-text-subtle);
+  color: var(--color-text-subtle);
+}
+
+.card-btn.watch:hover {
+  background: var(--color-surface-sunk);
+}
+
+.card-btn.selected {
+  background: var(--color-action);
+  border-color: var(--color-action);
+  border-style: solid;
+  color: var(--color-text-on-accent);
+}
+
+.card-btn.watch.selected {
+  border-style: dashed;
+}
+
+.card-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.coffee,
+.question {
+  display: block;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.coffee {
+  font-size: 1.85em;
+}
+
+.question {
+  font-size: 1.45em;
+}
+
+.card-btn svg,
+.player-card svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  max-width: none;
+  pointer-events: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-list li {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history-list li:last-child {
+  border-bottom: 0;
+}
+
+.round-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+  align-items: baseline;
+}
+
+.round-head time {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size--1);
+}
+
+.round-votes {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size--1);
+}
+
+.history-back {
+  margin-bottom: var(--space-5);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: color-mix(in oklch, var(--color-text) 45%, transparent);
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+}
+
+.overlay-card {
+  width: min(28rem, 100%);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 var(--space-6);
+}
+
+.switch {
+  appearance: none;
+  width: 2.75rem;
+  height: 1.6rem;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+  position: relative;
+  border: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--color-surface);
+  transition: transform 0.15s ease;
+}
+
+.switch:checked {
+  background: var(--color-action);
+}
+
+.switch:checked::after {
+  transform: translateX(1.15rem);
+}
+
+.flash {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-action-subtle);
+  color: var(--color-action-hover);
+  font-size: var(--font-size--1);
+}
+
+@media (max-width: 40rem) {
+  .table-bubble {
+    padding: var(--space-6) var(--space-5);
+    min-width: 0;
+    width: 100%;
+  }
+
+  .card-btn,
+  .player-card {
+    width: 3rem;
+    height: 4.4rem;
+  }
+}

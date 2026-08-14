@@ -1,0 +1,142 @@
+/* =============================================================
+   DESIGN TOKENS
+   Warm & editorial · System fonts · Fluid type · OKLCH
+   -------------------------------------------------------------
+   Generated from Palette Studio.
+   accent  = oklch(L C 44) · chroma × 0.155
+   neutral = oklch(L C 99) · warmth 0.003
+   ============================================================= */
+
+:root {
+  /* ---------------------------------------------------------
+     TIER 1 · PRIMITIVES
+     --------------------------------------------------------- */
+
+  /* Warm neutral ramp */
+  --warm-50:   oklch(0.985 0.001 99);
+  --warm-100:  oklch(0.965 0.001 99);
+  --warm-200:  oklch(0.925 0.002 97);
+  --warm-300:  oklch(0.865 0.002 95);
+  --warm-400:  oklch(0.735 0.003 93);
+  --warm-500:  oklch(0.615 0.003 91);
+  --warm-600:  oklch(0.505 0.003 89);
+  --warm-700:  oklch(0.405 0.003 87);
+  --warm-800:  oklch(0.305 0.002 85);
+  --warm-900:  oklch(0.225 0.002 83);
+  --warm-950:  oklch(0.165 0.002 81);
+
+  /* Accent ramp */
+  --accent-50:   oklch(0.965 0.016 49);
+  --accent-100:  oklch(0.925 0.036 48);
+  --accent-200:  oklch(0.86 0.067 47);
+  --accent-300:  oklch(0.78 0.103 46);
+  --accent-400:  oklch(0.7 0.140 45);
+  --accent-500:  oklch(0.63 0.155 44);   /* base accent */
+  --accent-600:  oklch(0.56 0.150 43);
+  --accent-700:  oklch(0.48 0.129 42);
+  --accent-800:  oklch(0.4 0.103 41);
+  --accent-900:  oklch(0.33 0.081 40);
+
+  /* Type — fluid via clamp(min, preferred, max). 1.25 modular scale. */
+  --font-size--1: clamp(0.80rem, 0.77rem + 0.15vw, 0.89rem);  /* meta/caption */
+  --font-size-0:  clamp(1.00rem, 0.95rem + 0.25vw, 1.13rem);  /* body */
+  --font-size-1:  clamp(1.25rem, 1.16rem + 0.44vw, 1.41rem);  /* lead / h4 */
+  --font-size-2:  clamp(1.56rem, 1.42rem + 0.71vw, 1.76rem);  /* h3 */
+  --font-size-3:  clamp(1.95rem, 1.73rem + 1.10vw, 2.20rem);  /* h2 */
+  --font-size-4:  clamp(2.44rem, 2.10rem + 1.68vw, 2.75rem);  /* h1 */
+  --font-size-5:  clamp(3.05rem, 2.55rem + 2.53vw, 3.43rem);  /* display */
+
+  /* Line heights */
+  --leading-tight:   1.15;
+  --leading-snug:    1.35;
+  --leading-normal:  1.6;
+
+  /* Font stacks — system only */
+  --font-serif: ui-serif, Charter, "Bitstream Charter", "Sitka Text",
+                Cambria, Georgia, "Times New Roman", serif;
+  --font-sans:  ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:  ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono",
+                Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Weights */
+  --weight-normal:    400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+
+  /* Spacing — 4px base */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+  --space-24:  6rem;
+
+  /* Radius */
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --measure:      68ch;
+  --measure-wide: 90ch;
+
+  /* Shadows — warm-tinted, subtle */
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 60 / 0.08);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 60 / 0.10);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 60 / 0.12);
+
+  /* ---------------------------------------------------------
+     TIER 2 · SEMANTIC (light theme)
+     --------------------------------------------------------- */
+  --color-bg:            var(--warm-50);
+  --color-surface:       oklch(1 0 0);
+  --color-surface-sunk:  var(--warm-100);
+  --color-border:        var(--warm-200);
+  --color-border-strong: var(--warm-300);
+
+  --color-text:          var(--warm-900);
+  --color-text-muted:    var(--warm-600);
+  --color-text-subtle:   var(--warm-500);
+  --color-text-on-accent: var(--warm-50);
+
+  --color-action:         var(--accent-600);
+  --color-action-hover:   var(--accent-700);
+  --color-action-subtle:  var(--accent-100);
+  --color-focus-ring:     var(--accent-500);
+
+  --color-link:           var(--accent-700);
+  --color-link-hover:     var(--accent-800);
+}
+
+/* ---------------------------------------------------------
+   TIER 2 · SEMANTIC (dark theme)
+   --------------------------------------------------------- */
+:root[data-theme="dark"] {
+  --color-bg:            var(--warm-950);
+  --color-surface:       var(--warm-900);
+  --color-surface-sunk:  oklch(0.135 0.006 52);
+  --color-border:        var(--warm-800);
+  --color-border-strong: var(--warm-700);
+
+  --color-text:          var(--warm-100);
+  --color-text-muted:    var(--warm-300);
+  --color-text-subtle:   var(--warm-400);
+  --color-text-on-accent: var(--warm-950);
+
+  --color-action:         var(--accent-500);
+  --color-action-hover:   var(--accent-400);
+  --color-action-subtle:  oklch(0.33 0.078 36);
+  --color-focus-ring:     var(--accent-400);
+
+  --color-link:           var(--accent-400);
+  --color-link-hover:     var(--accent-300);
+}

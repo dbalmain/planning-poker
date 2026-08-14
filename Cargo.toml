@@ -1,0 +1,30 @@
+[package]
+name = "planning-poker"
+version = "0.1.0"
+edition = "2024"
+description = "Planning poker for a small team on a VPC"
+license = "MIT"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+
+[dependencies]
+axum = { version = "0.8.9", features = ["ws", "macros"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+rand = "0.10.2"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.20"
+tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "net", "sync", "time", "fs"] }
+tower-http = { version = "0.7.0", features = ["fs", "cors", "trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
+
+[dev-dependencies]
+tempfile = "3.27.0"
+tower = { version = "0.5.3", features = ["util"] }

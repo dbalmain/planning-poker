@@ -1,0 +1,10 @@
+/target
+/static
+/frontend/node_modules
+/frontend/dist
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.ai
+.grok
