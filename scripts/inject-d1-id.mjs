@@ -18,7 +18,7 @@ if (!id) {
   console.error(
     "D1_DATABASE_ID is not set. Remote deploys need it because wrangler.jsonc\n" +
       "omits database_id on purpose. Get it from `wrangler d1 list`, then set it\n" +
-      "as a repository secret (CI) or export it (local deploy).",
+      "as a GitHub Actions variable (CI) or export it (local deploy).",
   );
   process.exit(1);
 }

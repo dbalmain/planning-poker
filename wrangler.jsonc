@@ -36,7 +36,7 @@
       // "database_id" is deliberately absent: this repo is public, and a
       // committed id is wrong for anyone who forks it. Local dev and both
       // test suites use miniflare's local D1 and need no id at all. Remote
-      // deploys get it from the D1_DATABASE_ID secret, injected into the
+      // deploys get it from the D1_DATABASE_ID variable, injected into the
       // generated config by scripts/inject-d1-id.mjs — see .github/workflows/ci.yml.
       // (`wrangler d1 create` appends an id here automatically; delete it.)
       "migrations_dir": "migrations",

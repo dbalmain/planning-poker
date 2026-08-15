@@ -95,16 +95,17 @@ npx wrangler d1 create planning-poker
 
 `wrangler d1 create` appends a `database_id` to `wrangler.jsonc` — **delete
 it**. This repo is public, so no account-specific ids are committed; note the id
-and add it as a secret instead. Local development and both test suites use
+and add it as a variable instead. Local development and both test suites use
 miniflare's local D1 and need no id at all.
 
-Then add three repository secrets (Settings → Secrets and variables → Actions):
+Then add one repository **secret** and two **variables** (Settings → Secrets
+and variables → Actions, or on the `production` environment):
 
-| Secret                  | Value                                    |
-| ----------------------- | ---------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | a scoped API token — see the table below |
-| `CLOUDFLARE_ACCOUNT_ID` | from `wrangler whoami`                   |
-| `D1_DATABASE_ID`        | from `wrangler d1 list`                  |
+| Kind     | Name                    | Value                                    |
+| -------- | ----------------------- | ---------------------------------------- |
+| Secret   | `CLOUDFLARE_API_TOKEN`  | a scoped API token — see the table below |
+| Variable | `CLOUDFLARE_ACCOUNT_ID` | from `wrangler whoami`                   |
+| Variable | `D1_DATABASE_ID`        | from `wrangler d1 list`                  |
 
 The API token (My Profile → API Tokens → Create Custom Token) needs:
 
