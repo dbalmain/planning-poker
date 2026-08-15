@@ -9,10 +9,14 @@
     "build": "vite build",
     "preview": "MINIFLARE_WORKERD_PATH=./scripts/workerd vite preview",
     "db:migrate": "MINIFLARE_WORKERD_PATH=./scripts/workerd wrangler d1 migrations apply planning-poker --local",
-    "deploy": "vite build && wrangler d1 migrations apply planning-poker --remote && wrangler deploy",
+    "deploy": "npm run build && npm run deploy:config && npm run deploy:migrate && npm run deploy:worker",
+    "deploy:config": "node scripts/inject-d1-id.mjs",
+    "deploy:migrate": "wrangler d1 migrations apply DB --remote -c dist/planning_poker/wrangler.json",
+    "deploy:worker": "wrangler deploy -c dist/planning_poker/wrangler.json",
+    "check": "npm run typecheck && npm test && npm run build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run --config vitest.unit.config.ts && MINIFLARE_WORKERD_PATH=./scripts/workerd vitest run --config vitest.config.ts",
-    "types": "wrangler types"
+    "types": "wrangler types --include-runtime=false"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.0",

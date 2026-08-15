@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A newer push to main supersedes an in-flight run; never let two
+  # `wrangler deploy` calls race against the same Worker.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # typecheck + both test suites + build.
+      - run: npm run check
+
+      # Stash the build so deploy publishes exactly the artifact that passed the
+      # gate rather than rebuilding outside it. dist/planning_poker/wrangler.json
+      # is the generated Worker config the deploy steps below point at.
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://planning-poker.davebalmain.me
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      # wrangler.jsonc omits database_id so this public repo carries no
+      # account-specific ids, and wrangler has no config interpolation. Inject it
+      # into the generated (gitignored) config instead. Fails loudly if unset.
+      - name: Inject D1 database id
+        env:
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+        run: node scripts/inject-d1-id.mjs
+
+      # Migrations first: the Worker no longer creates tables at runtime, so a
+      # deploy landing ahead of its migration would serve errors. Re-applying an
+      # already-applied migration is a no-op, so this is safe to repeat.
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply DB --remote -c dist/planning_poker/wrangler.json
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy -c dist/planning_poker/wrangler.json
+
+      # A deploy reports success while the custom-domain route or its DNS record
+      # is still missing, and a wrong D1 binding only shows up at runtime. Prove
+      # the three layers separately: Worker, database-backed API, static assets.
+      - name: Smoke-test the deployment
+        run: |
+          set -eu
+          url=https://planning-poker.davebalmain.me
+          code=000
+          for i in $(seq 1 10); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$url/healthz" || true)
+            [ "$code" = "200" ] && break
+            echo "attempt $i: /healthz returned $code; retrying in 6s"
+            sleep 6
+          done
+          [ "$code" = "200" ] || { echo "::error::/healthz never returned 200 (last: $code)"; exit 1; }
+
+          curl -sSf "$url/api/decks" | grep -q fibonacci \
+            || { echo "::error::/api/decks did not list the fibonacci deck"; exit 1; }
+
+          # Exercises the D1 binding for real — a missing or wrong database_id
+          # passes the two checks above and fails here.
+          board=$(curl -sSf -X POST "$url/api/boards" \
+            -H 'content-type: application/json' \
+            -d '{"name":"ci smoke","deck":"fibonacci"}')
+          echo "$board" | grep -q '"id"' \
+            || { echo "::error::POST /api/boards did not return a board: $board"; exit 1; }
+
+          curl -sSf "$url/" | grep -q 'id="app"' \
+            || { echo "::error::index.html was not served from static assets"; exit 1; }

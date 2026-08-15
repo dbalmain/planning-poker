@@ -10,8 +10,23 @@
 		"enabled": true,
 		"head_sampling_rate": 1,
 	},
+	// planning-poker.davebalmain.me. Declaring the route here means the first
+	// deploy creates the DNS record itself; there is nothing to click in the
+	// dashboard. Requires the API token to hold Zone:DNS:Edit and
+	// Zone:Workers Routes:Edit on davebalmain.me.
+	"routes": [
+		{
+			"pattern": "planning-poker.davebalmain.me",
+			"custom_domain": true,
+		},
+	],
+	// The custom domain is the only entry point; no planning-poker.*.workers.dev.
+	"workers_dev": false,
 	"assets": {
-		"directory": "./public",
+		// No "directory" here on purpose: @cloudflare/vite-plugin sets it to the
+		// client build output when it generates dist/planning_poker/wrangler.json.
+		// Setting it by hand would make a bare `wrangler deploy` publish public/
+		// — a single file — as the entire site.
 		"not_found_handling": "single-page-application",
 		// Keep these prefixes aligned with the route definitions in shared/routes.ts.
 		"run_worker_first": [
@@ -24,13 +39,13 @@
 		{
 			"binding": "DB",
 			"database_name": "planning-poker",
-			// After `wrangler d1 create planning-poker`, paste the id here.
-			// "database_id": "<id>",
+			// "database_id" is deliberately absent: this repo is public, and a
+			// committed id is wrong for anyone who forks it. Local dev and both
+			// test suites use miniflare's local D1 and need no id at all. Remote
+			// deploys get it from the D1_DATABASE_ID secret, injected into the
+			// generated config by scripts/inject-d1-id.mjs — see .github/workflows/ci.yml.
+			// (`wrangler d1 create` appends an id here automatically; delete it.)
 			"migrations_dir": "migrations",
-		},
-		{
-			"binding": "planning_poker",
-			"database_name": "planning-poker",
 		},
 	],
 	"durable_objects": {
