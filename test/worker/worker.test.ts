@@ -2,7 +2,12 @@ import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { SESSION_TTL_MS } from "../../shared/ttl.ts";
 import { deleteStaleBoards } from "../../worker/cleanup.ts";
-import type { BoardMeta, HistoryResponse, ServerMsg } from "../../shared/protocol.ts";
+import type {
+  BoardMeta,
+  ClientMsg,
+  HistoryResponse,
+  ServerMsg,
+} from "../../shared/protocol.ts";
 
 async function createBoard(name = "Sprint"): Promise<BoardMeta> {
   const res = await exports.default.fetch("https://example.com/api/boards", {
@@ -51,6 +56,24 @@ function nextMessage(socket: WebSocket): Promise<ServerMsg> {
     socket.addEventListener("message", onMessage);
     socket.addEventListener("error", onError);
   });
+}
+
+async function send(socket: WebSocket, msg: ClientMsg): Promise<ServerMsg> {
+  const pending = nextMessage(socket);
+  socket.send(JSON.stringify(msg));
+  return pending;
+}
+
+async function playRound(
+  socket: WebSocket,
+  round: { ticket: string; card: string },
+): Promise<ServerMsg> {
+  await send(socket, { type: "set_ticket", ticket: round.ticket });
+  await send(socket, { type: "vote", card: round.card });
+  await send(socket, { type: "reveal" });
+  await send(socket, { type: "pick_estimate" });
+  await send(socket, { type: "set_estimate", card: round.card });
+  return send(socket, { type: "confirm_round" });
 }
 
 describe("http", () => {
@@ -127,31 +150,14 @@ describe("table", () => {
     const created = await createBoard();
     const dave = pid(1);
     const socket = await openSocket(created.id);
-    const welcomeP = nextMessage(socket);
-    socket.send(
-      JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }),
-    );
-    const welcome = await welcomeP;
+    const welcome = await send(socket, {
+      type: "join",
+      player_id: dave,
+      name: "Dave",
+      spectator: false,
+    });
     expect(welcome.type).toBe("welcome");
-
-    const afterTicket = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "set_ticket", ticket: "PROJ-2" }));
-    await afterTicket;
-    const afterVote = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "vote", card: "5" }));
-    await afterVote;
-    const afterReveal = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "reveal" }));
-    await afterReveal;
-    const afterPick = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "pick_estimate" }));
-    await afterPick;
-    const afterEstimate = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "set_estimate", card: "5" }));
-    await afterEstimate;
-    const afterSave = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "confirm_round" }));
-    const saved = await afterSave;
+    const saved = await playRound(socket, { ticket: "PROJ-2", card: "5" });
     expect(saved.type).toBe("state");
     if (saved.type !== "state") {
       return;
@@ -176,29 +182,13 @@ describe("cleanup", () => {
     const created = await createBoard("Old");
     const dave = pid(1);
     const socket = await openSocket(created.id);
-    const welcomeP = nextMessage(socket);
-    socket.send(
-      JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }),
-    );
-    await welcomeP;
-    const afterTicket = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "set_ticket", ticket: "OLD-1" }));
-    await afterTicket;
-    const afterVote = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "vote", card: "3" }));
-    await afterVote;
-    const afterReveal = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "reveal" }));
-    await afterReveal;
-    const afterPick = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "pick_estimate" }));
-    await afterPick;
-    const afterEstimate = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "set_estimate", card: "3" }));
-    await afterEstimate;
-    const afterSave = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "confirm_round" }));
-    await afterSave;
+    await send(socket, {
+      type: "join",
+      player_id: dave,
+      name: "Dave",
+      spectator: false,
+    });
+    await playRound(socket, { ticket: "OLD-1", card: "3" });
     socket.close();
 
     const old = new Date(Date.now() - SESSION_TTL_MS - 60_000).toISOString();
