@@ -1,0 +1,22 @@
+# Weekly grouped bumps so this repo does not rot when nobody is looking.
+# Majors that break `npm run check` sit unmerged — see
+# .github/workflows/dependabot-auto-merge.yml.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"

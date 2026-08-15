@@ -1,11 +1,16 @@
 # Planning poker
 
+[![CI](https://github.com/dbalmain/planning-poker/actions/workflows/ci.yml/badge.svg)](https://github.com/dbalmain/planning-poker/actions/workflows/ci.yml)
+[![Demo](https://img.shields.io/badge/demo-live-2ea44f)](https://planning-poker.davebalmain.me)
+
 A small planning-poker table. Create a session, share the URL, people join with
 a display name, vote in private, reveal together, then save who voted what
 against a ticket id.
 
-No accounts. The board id is 128 bits of randomness; treat the URL as the
-secret.
+[Try it live](https://planning-poker.davebalmain.me). No accounts — the board
+id is 128 bits of randomness; treat the URL as the secret.
+
+![A revealed Fibonacci hand. Five players, average 2.8, agreed estimate 2.](docs/screenshot.png)
 
 It runs on Cloudflare: a Worker serves the UI and API, a Durable Object holds
 each live table, and D1 stores saved history. A daily cron deletes sessions that
@@ -84,7 +89,12 @@ create tables at runtime. Adding a column means adding a migration.
 Every push to `main` runs
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml), which gates on
 `npm run check`, applies D1 migrations, deploys the Worker, and smoke-tests the
-result. The site is <https://planning-poker.davebalmain.me>.
+result. The live site is <https://planning-poker.davebalmain.me>.
+
+Dependabot opens a weekly grouped PR for npm and another for GitHub Actions.
+[`.github/workflows/dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml)
+squash-merges those PRs once CI is green, so the stack does not rot. A bump
+that fails `npm run check` sits unmerged.
 
 ### One-time setup
 

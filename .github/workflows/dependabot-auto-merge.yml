@@ -1,0 +1,39 @@
+# Squash-merge Dependabot PRs once CI is green. Without this, weekly bumps
+# would pile up on a repo that is not being watched.
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Squash-merge if this was Dependabot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -eu
+          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" --jq '.[0]')
+          login=$(printf '%s' "$pr" | jq -r '.user.login // empty')
+          number=$(printf '%s' "$pr" | jq -r '.number // empty')
+          state=$(printf '%s' "$pr" | jq -r '.state // empty')
+          ref=$(printf '%s' "$pr" | jq -r '.head.ref // empty')
+          [ "$login" = "dependabot[bot]" ] || exit 0
+          [ "$state" = "open" ] || exit 0
+          case "$ref" in
+            dependabot/*) ;;
+            *) exit 0 ;;
+          esac
+          gh pr merge "$number" --repo "$REPO" --squash --delete-branch
