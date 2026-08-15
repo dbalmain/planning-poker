@@ -7,8 +7,8 @@ import {
   deckContains,
   parseDeck,
   parseNumeric,
-} from "../shared/deck.ts";
-import { AppError } from "../shared/errors.ts";
+} from "../../shared/deck.ts";
+import { AppError } from "../../shared/errors.ts";
 
 describe("decks", () => {
   it("every deck has question and coffee", () => {

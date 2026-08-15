@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { FIBONACCI, POWERS_OF_TWO, TSHIRT } from "../shared/deck.ts";
-import { AppError } from "../shared/errors.ts";
-import { Board } from "../shared/game.ts";
+import { FIBONACCI, POWERS_OF_TWO, TSHIRT } from "../../shared/deck.ts";
+import { AppError } from "../../shared/errors.ts";
+import { Board } from "../../shared/game.ts";
 
 function pid(n: number): string {
   return n.toString(16).padStart(32, "0");

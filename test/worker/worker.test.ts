@@ -1,8 +1,8 @@
 import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { SESSION_TTL_MS } from "../shared/ttl.ts";
-import { deleteStaleBoards } from "../worker/cleanup.ts";
-import type { BoardMeta, HistoryResponse, ServerMsg } from "../shared/protocol.ts";
+import { SESSION_TTL_MS } from "../../shared/ttl.ts";
+import { deleteStaleBoards } from "../../worker/cleanup.ts";
+import type { BoardMeta, HistoryResponse, ServerMsg } from "../../shared/protocol.ts";
 
 async function createBoard(name = "Sprint"): Promise<BoardMeta> {
   const res = await exports.default.fetch("https://example.com/api/boards", {

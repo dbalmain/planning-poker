@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isHexId, randomId } from "../shared/id.ts";
+import { isHexId, randomId } from "../../shared/id.ts";
 
 describe("ids", () => {
   it("are 32 hex chars", () => {

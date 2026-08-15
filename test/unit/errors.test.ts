@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Errors, errorBody } from "../shared/errors.ts";
+import { Errors, errorBody } from "../../shared/errors.ts";
 
 describe("error responses", () => {
   it("keeps application errors user-facing", () => {

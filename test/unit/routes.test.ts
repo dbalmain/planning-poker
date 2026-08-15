@@ -6,7 +6,7 @@ import {
   pageBoard,
   pageBoardHistory,
   wsBoard,
-} from "../shared/routes.ts";
+} from "../../shared/routes.ts";
 
 const id = "a".repeat(32);
 
