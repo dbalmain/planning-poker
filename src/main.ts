@@ -394,7 +394,7 @@ function renderStage(el: HTMLElement, state: Snapshot): void {
       const you = player.id === state.you.id ? `<span class="you-tag">you</span>` : "";
       let card: string;
       if (player.spectator) {
-        card = `<div class="player-card watching" title="Watching">${EYE_ICON}</div>`;
+        card = `<div class="player-card watching" title="Watching">${eyeFace()}</div>`;
       } else if (player.vote !== null && isOpenCard(player.vote)) {
         const title =
           player.vote === "☕" ? "Not voting" : "Doesn't understand the ticket";
@@ -475,7 +475,7 @@ function renderHand(el: HTMLElement, state: Snapshot): void {
     .join("");
   const watchLabel = state.you.spectator ? "Join as voter" : "Watch instead";
   const watchCls = state.you.spectator ? "card-btn watch selected" : "card-btn watch";
-  el.innerHTML = `${cards}<button class="${watchCls}" type="button" data-action="spectate" title="${watchLabel}" aria-label="${watchLabel}" aria-pressed="${state.you.spectator}">${EYE_ICON}</button>`;
+  el.innerHTML = `${cards}<button class="${watchCls}" type="button" data-action="spectate" title="${watchLabel}" aria-label="${watchLabel}" aria-pressed="${state.you.spectator}">${eyeFace()}</button>`;
 }
 
 async function showHistory(root: HTMLElement, boardId: string): Promise<void> {
@@ -622,7 +622,9 @@ function cardFace(card: string): string {
   return label;
 }
 
-const EYE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>`;
+function eyeFace(): string {
+  return `<span class="eye" aria-hidden="true">👀</span>`;
+}
 
 type SiteChrome = {
   title: string;

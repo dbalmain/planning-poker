@@ -355,26 +355,23 @@ select.input {
 }
 
 .coffee,
-.question {
+.question,
+.eye {
   display: block;
   line-height: 1;
   pointer-events: none;
 }
 
 .coffee {
+  font-size: 2.4em;
+}
+
+.eye {
   font-size: 1.85em;
 }
 
 .question {
   font-size: 1.45em;
-}
-
-.card-btn svg,
-.player-card svg {
-  width: 1.4rem;
-  height: 1.4rem;
-  max-width: none;
-  pointer-events: none;
 }
 
 .actions {

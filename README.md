@@ -21,13 +21,13 @@ completed round; starting the next ticket throws the live hand away.
 ## How a session works
 
 1. Create a session (optional name, pick a deck).
-2. Share the link. Everyone types a name. The eye card watches without voting.
-3. Name the current ticket (usually a Jira id).
-4. Vote. You can change your card until someone hits **Reveal cards**. Anyone at
-   the table can reveal. `?` and `☕` show immediately (same dashed style as the
-   eye); numbers stay hidden. `☕` sits the round out and drops you from the
-   voter count. `?` keeps you in the count but is not a vote — you don't
-   understand the ticket yet.
+2. Share the link. Everyone types a name. `👀` watches without voting.
+3. Name the current ticket (e.g. a Jira id).
+4. Vote. You can change your card until the hand is saved. Anyone at the table
+   can reveal. `?` (don't understand the ticket) and `☕` (out for this round)
+   show immediately, same dashed style as `👀`; numbers stay hidden. `☕` sits
+   the round out and drops you from the voter count. `?` keeps you in the
+   count but is not a vote.
 5. After the reveal, votes stay face-up and people can still change them while
    you discuss. The table shows the average. **Pick agreed estimate** locks
    votes; then choose the agreed card and **Save result & next ticket**.
@@ -41,7 +41,8 @@ The deck can be changed on the table at any time. Cards that are not in the new
 deck are dropped.
 
 Built-in decks: Fibonacci (includes `½`), modified Fibonacci, powers of 2,
-T-shirt. Every deck includes `?` and `☕`.
+T-shirt. Every deck includes `?` and `☕`. `👀` is the spectator toggle, not a
+card.
 
 ## Run it
 
