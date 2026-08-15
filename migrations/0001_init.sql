@@ -1,4 +1,4 @@
-CREATE TABLE boards (
+CREATE TABLE IF NOT EXISTS boards (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   deck TEXT NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE boards (
   last_used_at TEXT NOT NULL
 );
 
-CREATE TABLE rounds (
+CREATE TABLE IF NOT EXISTS rounds (
   id TEXT PRIMARY KEY,
   board_id TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
   ticket TEXT NOT NULL,
@@ -15,5 +15,5 @@ CREATE TABLE rounds (
   completed_at TEXT NOT NULL
 );
 
-CREATE INDEX rounds_board_idx ON rounds (board_id, completed_at);
-CREATE INDEX boards_last_used_idx ON boards (last_used_at);
+CREATE INDEX IF NOT EXISTS rounds_board_idx ON rounds (board_id, completed_at);
+CREATE INDEX IF NOT EXISTS boards_last_used_idx ON boards (last_used_at);
