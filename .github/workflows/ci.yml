@@ -32,7 +32,7 @@ jobs:
       # Stash the build so deploy publishes exactly the artifact that passed the
       # gate rather than rebuilding outside it. dist/planning_poker/wrangler.json
       # is the generated Worker config the deploy steps below point at.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           name: dist
@@ -55,7 +55,7 @@ jobs:
 
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
