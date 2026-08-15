@@ -100,6 +100,26 @@ describe("http", () => {
 });
 
 describe("table", () => {
+  it("loads board metadata when the DO is addressed directly", async () => {
+    const created = await createBoard();
+    const room = env.ROOM.getByName(created.id);
+    await room.purge();
+
+    const res = await room.fetch(
+      new Request(`https://example.com/ws/boards/${created.id}`, {
+        headers: { Upgrade: "websocket" },
+      }),
+    );
+    expect(res.status).toBe(101);
+    const socket = res.webSocket;
+    expect(socket).toBeDefined();
+    if (!socket) {
+      throw new Error("missing websocket");
+    }
+    socket.accept();
+    socket.close();
+  });
+
   it("saves a round to history and drops the live ticket", async () => {
     const created = await createBoard();
     const dave = pid(1);
