@@ -42,7 +42,7 @@ export default {
         break;
       }
     }
-    console.log(
+    console.info(
       JSON.stringify({
         level: "info",
         message: "purged stale sessions",
@@ -100,7 +100,9 @@ async function handle(request: Request, env: Env): Promise<Response> {
   return json({ error: "not found" }, 404);
 }
 
-async function readCreateBoardRequest(request: Request): Promise<CreateBoardRequest | null> {
+async function readCreateBoardRequest(
+  request: Request,
+): Promise<CreateBoardRequest | null> {
   let body: unknown;
   try {
     body = await request.json();

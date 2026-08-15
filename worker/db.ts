@@ -2,7 +2,12 @@ import { parseDeck } from "../shared/deck.ts";
 import { Errors } from "../shared/errors.ts";
 import { normalizeBoardName } from "../shared/game.ts";
 import { randomId } from "../shared/id.ts";
-import type { BoardMeta, CompletedRound, HistoryResponse, VoteRecord } from "../shared/protocol.ts";
+import type {
+  BoardMeta,
+  CompletedRound,
+  HistoryResponse,
+  VoteRecord,
+} from "../shared/protocol.ts";
 
 export type BoardRow = {
   id: string;
@@ -31,7 +36,10 @@ export async function createBoard(
 }
 
 export async function getBoard(db: D1Database, id: string): Promise<BoardRow | null> {
-  return db.prepare("SELECT id, name, deck, created_at, last_used_at FROM boards WHERE id = ?").bind(id).first<BoardRow>();
+  return db
+    .prepare("SELECT id, name, deck, created_at, last_used_at FROM boards WHERE id = ?")
+    .bind(id)
+    .first<BoardRow>();
 }
 
 export async function requireBoard(db: D1Database, id: string): Promise<BoardRow> {
@@ -49,7 +57,11 @@ export async function touchBoard(db: D1Database, id: string): Promise<void> {
     .run();
 }
 
-export async function setBoardDeck(db: D1Database, id: string, deck: string): Promise<void> {
+export async function setBoardDeck(
+  db: D1Database,
+  id: string,
+  deck: string,
+): Promise<void> {
   await db.prepare("UPDATE boards SET deck = ? WHERE id = ?").bind(deck, id).run();
 }
 
@@ -62,11 +74,21 @@ export async function insertRound(
     .prepare(
       "INSERT INTO rounds (id, board_id, ticket, agreed, votes_json, completed_at) VALUES (?, ?, ?, ?, ?, ?)",
     )
-    .bind(round.id, boardId, round.ticket, round.agreed, JSON.stringify(round.votes), round.completed_at)
+    .bind(
+      round.id,
+      boardId,
+      round.ticket,
+      round.agreed,
+      JSON.stringify(round.votes),
+      round.completed_at,
+    )
     .run();
 }
 
-export async function listHistory(db: D1Database, boardId: string): Promise<HistoryResponse> {
+export async function listHistory(
+  db: D1Database,
+  boardId: string,
+): Promise<HistoryResponse> {
   const board = await requireBoard(db, boardId);
   const rows = await db
     .prepare(
@@ -80,7 +102,7 @@ export async function listHistory(db: D1Database, boardId: string): Promise<Hist
       votes_json: string;
       completed_at: string;
     }>();
-  const rounds: CompletedRound[] = (rows.results ?? []).map((row) => ({
+  const rounds: CompletedRound[] = rows.results.map((row) => ({
     id: row.id,
     ticket: row.ticket,
     agreed: row.agreed,

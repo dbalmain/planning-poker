@@ -1,7 +1,14 @@
 import { deckContains, isOpenCard, parseDeck, parseNumeric, type Deck } from "./deck.ts";
 import { Errors } from "./errors.ts";
 import { isHexId, randomId } from "./id.ts";
-import type { ClientMsg, CompletedRound, Phase, PlayerView, Snapshot, VoteRecord } from "./protocol.ts";
+import type {
+  ClientMsg,
+  CompletedRound,
+  Phase,
+  PlayerView,
+  Snapshot,
+  VoteRecord,
+} from "./protocol.ts";
 
 type BoardMessage = Exclude<ClientMsg, { type: "confirm_round" }>;
 
@@ -52,8 +59,8 @@ export class Board {
     this.deck = init.deck;
     this.ticket = init.ticket ?? "";
     this.phase = init.phase ?? "voting";
-    this.players = init.players ?? new Map();
-    this.votes = init.votes ?? new Map();
+    this.players = init.players ?? new Map<string, Player>();
+    this.votes = init.votes ?? new Map<string, string>();
     this.proposedEstimate = init.proposedEstimate ?? null;
   }
 

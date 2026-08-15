@@ -23,13 +23,15 @@ export const Errors = {
   alreadyRevealed: () => new AppError("cards are already revealed", ErrorStatus.Conflict),
   notRevealed: () => new AppError("cards are still hidden", ErrorStatus.Conflict),
   votesLocked: () => new AppError("votes are locked", ErrorStatus.Conflict),
-  notChoosing: () => new AppError("click Pick Agreed Estimate first", ErrorStatus.Conflict),
+  notChoosing: () =>
+    new AppError("click Pick Agreed Estimate first", ErrorStatus.Conflict),
   noEstimate: () => new AppError("pick an agreed estimate first", ErrorStatus.Conflict),
   noTicket: () => new AppError("give this round a ticket name", ErrorStatus.Conflict),
   emptyName: () => new AppError("name cannot be empty", ErrorStatus.BadRequest),
   nameTooLong: () => new AppError("name is too long", ErrorStatus.BadRequest),
   ticketTooLong: () => new AppError("ticket is too long", ErrorStatus.BadRequest),
-  boardNameTooLong: () => new AppError("session name is too long", ErrorStatus.BadRequest),
+  boardNameTooLong: () =>
+    new AppError("session name is too long", ErrorStatus.BadRequest),
   invalidPlayerId: () => new AppError("invalid player id", ErrorStatus.BadRequest),
   invalidJson: () => new AppError("invalid JSON body", ErrorStatus.BadRequest),
 } as const;

@@ -24,5 +24,5 @@ export async function deleteStaleBoards(
     )
     .bind(cutoff, limit)
     .all<StaleBoardRow>();
-  return (deleted.results ?? []).map((row) => row.id);
+  return deleted.results.map((row) => row.id);
 }

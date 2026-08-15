@@ -26,7 +26,7 @@ export class Room extends DurableObject<Env> {
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    ctx.blockConcurrencyWhile(async () => {
+    void ctx.blockConcurrencyWhile(async () => {
       const saved = await ctx.storage.get<ReturnType<Board["toJSON"]>>("board");
       if (saved) {
         this.#board = Board.fromJSON(saved);
@@ -68,7 +68,10 @@ export class Room extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: pair[0] });
   }
 
-  override async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+  override async webSocketMessage(
+    ws: WebSocket,
+    message: string | ArrayBuffer,
+  ): Promise<void> {
     if (typeof message !== "string") {
       this.send(ws, { type: "error", message: "invalid message" });
       return;
@@ -91,7 +94,11 @@ export class Room extends DurableObject<Env> {
         const board = this.requireLive();
         board.join(msg.player_id, msg.name, msg.spectator);
         ws.serializeAttachment({ playerId: msg.player_id } satisfies Attachment);
-        this.send(ws, { type: "welcome", player_id: msg.player_id, state: board.snapshot(msg.player_id) });
+        this.send(ws, {
+          type: "welcome",
+          player_id: msg.player_id,
+          state: board.snapshot(msg.player_id),
+        });
         this.broadcastExcept(ws);
         this.scheduleWrite({ touch: true });
         return;
@@ -115,7 +122,7 @@ export class Room extends DurableObject<Env> {
     }
   }
 
-  override async webSocketClose(ws: WebSocket): Promise<void> {
+  override webSocketClose(ws: WebSocket): void {
     const attached = ws.deserializeAttachment() as Attachment | null;
     if (!attached || !this.#board) {
       return;
@@ -125,8 +132,8 @@ export class Room extends DurableObject<Env> {
     this.scheduleWrite();
   }
 
-  override async webSocketError(ws: WebSocket): Promise<void> {
-    await this.webSocketClose(ws);
+  override webSocketError(ws: WebSocket): void {
+    this.webSocketClose(ws);
   }
 
   private async ensureBoard(request: Request, supplied?: BoardRow): Promise<Board> {

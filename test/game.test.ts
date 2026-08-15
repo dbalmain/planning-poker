@@ -94,11 +94,17 @@ describe("board", () => {
     const { board, dave } = seated();
     board.vote(dave, "5");
     board.reveal();
-    expect(() => board.buildCompletedRound(dave)).toThrow("click Pick Agreed Estimate first");
+    expect(() => board.buildCompletedRound(dave)).toThrow(
+      "click Pick Agreed Estimate first",
+    );
     board.pickEstimate(dave);
-    expect(() => board.buildCompletedRound(dave)).toThrow("give this round a ticket name");
+    expect(() => board.buildCompletedRound(dave)).toThrow(
+      "give this round a ticket name",
+    );
     board.setTicket("PROJ-9");
-    expect(() => board.buildCompletedRound(dave)).toThrow("pick an agreed estimate first");
+    expect(() => board.buildCompletedRound(dave)).toThrow(
+      "pick an agreed estimate first",
+    );
     board.setEstimate(dave, "5");
     const round = board.buildCompletedRound(dave);
     board.startNextTicket();
@@ -239,7 +245,9 @@ describe("board", () => {
     const { board, dave } = seated();
     board.vote(dave, "5");
     board.reveal();
-    expect(() => board.setEstimate(dave, "5")).toThrow("click Pick Agreed Estimate first");
+    expect(() => board.setEstimate(dave, "5")).toThrow(
+      "click Pick Agreed Estimate first",
+    );
   });
 
   it("round-trips live state without history", () => {

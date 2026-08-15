@@ -1,18 +1,17 @@
-import { SELF } from "cloudflare:test";
-import { env } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { SESSION_TTL_MS } from "../shared/ttl.ts";
 import { deleteStaleBoards } from "../worker/cleanup.ts";
 import type { BoardMeta, HistoryResponse, ServerMsg } from "../shared/protocol.ts";
 
 async function createBoard(name = "Sprint"): Promise<BoardMeta> {
-  const res = await SELF.fetch("https://example.com/api/boards", {
+  const res = await exports.default.fetch("https://example.com/api/boards", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ name, deck: "fibonacci" }),
   });
   expect(res.status).toBe(201);
-  return (await res.json()) as BoardMeta;
+  return await res.json<BoardMeta>();
 }
 
 function pid(n: number): string {
@@ -20,7 +19,7 @@ function pid(n: number): string {
 }
 
 async function openSocket(boardId: string): Promise<WebSocket> {
-  const res = await SELF.fetch(`https://example.com/ws/boards/${boardId}`, {
+  const res = await exports.default.fetch(`https://example.com/ws/boards/${boardId}`, {
     headers: { Upgrade: "websocket" },
   });
   expect(res.status).toBe(101);
@@ -56,9 +55,9 @@ function nextMessage(socket: WebSocket): Promise<ServerMsg> {
 
 describe("http", () => {
   it("lists decks", async () => {
-    const res = await SELF.fetch("https://example.com/api/decks");
+    const res = await exports.default.fetch("https://example.com/api/decks");
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { id: string }[];
+    const body = await res.json<{ id: string }[]>();
     expect(body.some((deck) => deck.id === "fibonacci")).toBe(true);
   });
 
@@ -66,30 +65,34 @@ describe("http", () => {
     const created = await createBoard("Sprint");
     expect(created.name).toBe("Sprint");
     expect(created.id).toHaveLength(32);
-    const got = await SELF.fetch(`https://example.com/api/boards/${created.id}`);
+    const got = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}`,
+    );
     expect(got.status).toBe(200);
-    const meta = (await got.json()) as BoardMeta;
+    const meta = await got.json<BoardMeta>();
     expect(meta.name).toBe("Sprint");
     expect(meta.deck).toBe("fibonacci");
   });
 
   it("history is empty until a round is saved", async () => {
     const created = await createBoard();
-    const hist = await SELF.fetch(`https://example.com/api/boards/${created.id}/history`);
+    const hist = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}/history`,
+    );
     expect(hist.status).toBe(200);
-    const parsed = (await hist.json()) as HistoryResponse;
+    const parsed = await hist.json<HistoryResponse>();
     expect(parsed.rounds).toEqual([]);
     expect(parsed.name).toBe("Sprint");
   });
 
   it("unknown board is 404", async () => {
     const id = "a".repeat(32);
-    const res = await SELF.fetch(`https://example.com/api/boards/${id}`);
+    const res = await exports.default.fetch(`https://example.com/api/boards/${id}`);
     expect(res.status).toBe(404);
   });
 
   it("rejects malformed JSON as a bad request", async () => {
-    const res = await SELF.fetch("https://example.com/api/boards", {
+    const res = await exports.default.fetch("https://example.com/api/boards", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: "{",
@@ -125,7 +128,9 @@ describe("table", () => {
     const dave = pid(1);
     const socket = await openSocket(created.id);
     const welcomeP = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }));
+    socket.send(
+      JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }),
+    );
     const welcome = await welcomeP;
     expect(welcome.type).toBe("welcome");
 
@@ -155,8 +160,10 @@ describe("table", () => {
     expect(saved.state.phase).toBe("voting");
     expect(saved.state.completed).toEqual([]);
 
-    const hist = await SELF.fetch(`https://example.com/api/boards/${created.id}/history`);
-    const parsed = (await hist.json()) as HistoryResponse;
+    const hist = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}/history`,
+    );
+    const parsed = await hist.json<HistoryResponse>();
     expect(parsed.rounds).toHaveLength(1);
     expect(parsed.rounds[0]?.ticket).toBe("PROJ-2");
     expect(parsed.rounds[0]?.agreed).toBe("5");
@@ -170,7 +177,9 @@ describe("cleanup", () => {
     const dave = pid(1);
     const socket = await openSocket(created.id);
     const welcomeP = nextMessage(socket);
-    socket.send(JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }));
+    socket.send(
+      JSON.stringify({ type: "join", player_id: dave, name: "Dave", spectator: false }),
+    );
     await welcomeP;
     const afterTicket = nextMessage(socket);
     socket.send(JSON.stringify({ type: "set_ticket", ticket: "OLD-1" }));
@@ -193,15 +202,21 @@ describe("cleanup", () => {
     socket.close();
 
     const old = new Date(Date.now() - SESSION_TTL_MS - 60_000).toISOString();
-    await env.DB.prepare("UPDATE boards SET last_used_at = ? WHERE id = ?").bind(old, created.id).run();
+    await env.DB.prepare("UPDATE boards SET last_used_at = ? WHERE id = ?")
+      .bind(old, created.id)
+      .run();
 
     const ids = await deleteStaleBoards(env.DB);
     expect(ids).toContain(created.id);
     await env.ROOM.getByName(created.id).purge();
 
-    const gone = await SELF.fetch(`https://example.com/api/boards/${created.id}`);
+    const gone = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}`,
+    );
     expect(gone.status).toBe(404);
-    const hist = await SELF.fetch(`https://example.com/api/boards/${created.id}/history`);
+    const hist = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}/history`,
+    );
     expect(hist.status).toBe(404);
     const roundCount = await env.DB.prepare(
       "SELECT COUNT(*) AS count FROM rounds WHERE board_id = ?",
@@ -215,7 +230,9 @@ describe("cleanup", () => {
     const created = await createBoard("Fresh");
     const ids = await deleteStaleBoards(env.DB);
     expect(ids).not.toContain(created.id);
-    const got = await SELF.fetch(`https://example.com/api/boards/${created.id}`);
+    const got = await exports.default.fetch(
+      `https://example.com/api/boards/${created.id}`,
+    );
     expect(got.status).toBe(200);
   });
 
@@ -228,7 +245,10 @@ describe("cleanup", () => {
     const old = new Date(Date.now() - SESSION_TTL_MS - 60_000).toISOString();
     await env.DB.batch(
       boards.map((board) =>
-        env.DB.prepare("UPDATE boards SET last_used_at = ? WHERE id = ?").bind(old, board.id),
+        env.DB.prepare("UPDATE boards SET last_used_at = ? WHERE id = ?").bind(
+          old,
+          board.id,
+        ),
       ),
     );
 

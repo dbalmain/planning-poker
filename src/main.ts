@@ -52,7 +52,7 @@ if (route.kind === "page_board") {
 }
 
 async function showCreate(root: HTMLElement): Promise<void> {
-  let decks: DeckInfo[] = [];
+  let decks: DeckInfo[];
   try {
     const res = await fetch(apiDecks());
     decks = (await res.json()) as DeckInfo[];
@@ -78,7 +78,10 @@ async function showCreate(root: HTMLElement): Promise<void> {
         <div class="field">
           <label class="label" for="deck">Deck</label>
           <select class="input" id="deck" name="deck">${decks
-            .map((deck) => `<option value="${escapeHtml(deck.id)}">${escapeHtml(deck.preview)}</option>`)
+            .map(
+              (deck) =>
+                `<option value="${escapeHtml(deck.id)}">${escapeHtml(deck.preview)}</option>`,
+            )
             .join("")}</select>
         </div>
         <div id="err"></div>
@@ -96,8 +99,10 @@ async function showCreate(root: HTMLElement): Promise<void> {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const data = new FormData(form);
-    const name = String(data.get("name") ?? "").trim();
-    const deck = String(data.get("deck") ?? "fibonacci");
+    const nameField = data.get("name");
+    const deckField = data.get("deck");
+    const name = typeof nameField === "string" ? nameField.trim() : "";
+    const deck = typeof deckField === "string" ? deckField : "fibonacci";
     void (async () => {
       err.innerHTML = "";
       const res = await fetch(apiBoards(), {
@@ -110,7 +115,12 @@ async function showCreate(root: HTMLElement): Promise<void> {
         err.innerHTML = `<p class="flash">${escapeHtml(errorMessage(body))}</p>`;
         return;
       }
-      if (typeof body === "object" && body !== null && "id" in body && typeof body.id === "string") {
+      if (
+        typeof body === "object" &&
+        body !== null &&
+        "id" in body &&
+        typeof body.id === "string"
+      ) {
         location.assign(pageBoard(body.id));
       }
     })();
@@ -126,7 +136,10 @@ async function showBoard(root: HTMLElement, id: string): Promise<void> {
   }
   const meta: unknown = await metaRes.json();
   const boardName =
-    typeof meta === "object" && meta !== null && "name" in meta && typeof meta.name === "string"
+    typeof meta === "object" &&
+    meta !== null &&
+    "name" in meta &&
+    typeof meta.name === "string"
       ? meta.name
       : "Planning session";
   setSiteChrome({
@@ -146,7 +159,11 @@ async function showBoard(root: HTMLElement, id: string): Promise<void> {
   });
 }
 
-function showJoin(root: HTMLElement, boardName: string, onJoin: (seat: Seat) => void): void {
+function showJoin(
+  root: HTMLElement,
+  boardName: string,
+  onJoin: (seat: Seat) => void,
+): void {
   root.innerHTML = `
     <div class="overlay">
       <form class="card overlay-card" id="join">
@@ -171,7 +188,8 @@ function showJoin(root: HTMLElement, boardName: string, onJoin: (seat: Seat) => 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const data = new FormData(form);
-    const name = String(data.get("name") ?? "").trim();
+    const nameField = data.get("name");
+    const name = typeof nameField === "string" ? nameField.trim() : "";
     if (!name) {
       return;
     }
@@ -214,7 +232,10 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
 
   void loadDecks().then((decks) => {
     deckSelect.innerHTML = decks
-      .map((deck) => `<option value="${escapeHtml(deck.id)}">${escapeHtml(deck.label)}</option>`)
+      .map(
+        (deck) =>
+          `<option value="${escapeHtml(deck.id)}">${escapeHtml(deck.label)}</option>`,
+      )
       .join("");
     if (state) {
       deckSelect.value = state.deck_id;
@@ -371,11 +392,12 @@ function renderStage(el: HTMLElement, state: Snapshot): void {
   const people = state.players
     .map((player) => {
       const you = player.id === state.you.id ? `<span class="you-tag">you</span>` : "";
-      let card = `<div class="player-card">`;
+      let card: string;
       if (player.spectator) {
         card = `<div class="player-card watching" title="Watching">${EYE_ICON}</div>`;
       } else if (player.vote !== null && isOpenCard(player.vote)) {
-        const title = player.vote === "☕" ? "Not voting" : "Doesn't understand the ticket";
+        const title =
+          player.vote === "☕" ? "Not voting" : "Doesn't understand the ticket";
         card = `<div class="player-card watching" title="${title}">${cardFace(player.vote)}</div>`;
       } else if (player.vote !== null) {
         card = `<div class="player-card face">${cardFace(player.vote)}</div>`;
@@ -407,7 +429,9 @@ function renderTableResult(state: Snapshot): string {
   } else if (state.phase === "choosing") {
     parts.push(`<div class="result-stat result-hint">Pick the agreed estimate</div>`);
   } else if (state.average === null) {
-    parts.push(`<div class="result-stat result-hint">Discuss and update your cards</div>`);
+    parts.push(
+      `<div class="result-stat result-hint">Discuss and update your cards</div>`,
+    );
   }
   return `<div class="table-result">${parts.join("")}</div>`;
 }
@@ -443,7 +467,8 @@ function renderHand(el: HTMLElement, state: Snapshot): void {
       ]
         .filter((part) => part.length > 0)
         .join(" ");
-      const title = card === "☕" ? "Not voting" : card === "?" ? "Don't understand the ticket" : "";
+      const title =
+        card === "☕" ? "Not voting" : card === "?" ? "Don't understand the ticket" : "";
       const titleAttr = title ? ` title="${title}"` : "";
       return `<button class="${cls}" type="button" data-card="${escapeHtml(card)}"${titleAttr}>${cardFace(card)}</button>`;
     })
@@ -571,7 +596,12 @@ function mustSelect(root: ParentNode, sel: string): HTMLSelectElement {
 }
 
 function errorMessage(body: unknown): string {
-  if (typeof body === "object" && body !== null && "error" in body && typeof body.error === "string") {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "error" in body &&
+    typeof body.error === "string"
+  ) {
     return body.error;
   }
   return "Could not create the board";
@@ -640,7 +670,9 @@ function setSiteChrome(chrome: SiteChrome): void {
   title.textContent = chrome.title;
   title.setAttribute("href", chrome.titleHref);
   document.title =
-    chrome.title === "Planning poker" ? "Planning poker" : `${chrome.title} · Planning poker`;
+    chrome.title === "Planning poker"
+      ? "Planning poker"
+      : `${chrome.title} · Planning poker`;
   const showShare = Boolean(chrome.historyHref) && !chrome.historyCurrent;
   share.hidden = !showShare;
   if (showShare) {

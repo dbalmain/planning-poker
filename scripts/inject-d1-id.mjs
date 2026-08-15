@@ -27,7 +27,9 @@ let config;
 try {
   config = JSON.parse(await readFile(CONFIG, "utf8"));
 } catch (error) {
-  console.error(`Could not read ${CONFIG}. Run \`npm run build\` first.\n${String(error)}`);
+  console.error(
+    `Could not read ${CONFIG}. Run \`npm run build\` first.\n${String(error)}`,
+  );
   process.exit(1);
 }
 
