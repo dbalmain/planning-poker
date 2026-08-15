@@ -7,8 +7,8 @@ A small planning-poker table. Create a session, share the URL, people join with
 a display name, vote in private, reveal together, then save who voted what
 against a ticket id.
 
-[Try it live](https://planning-poker.davebalmain.me). No accounts — the board
-id is 128 bits of randomness; treat the URL as the secret.
+[Try it live](https://planning-poker.davebalmain.me). No accounts — the board id
+is 128 bits of randomness; treat the URL as the secret.
 
 ![A revealed Fibonacci hand. Five players, average 2.8, agreed estimate 2.](docs/screenshot.png)
 
@@ -26,8 +26,8 @@ completed round; starting the next ticket throws the live hand away.
 4. Vote. You can change your card until the hand is saved. Anyone at the table
    can reveal. `?` (don't understand the ticket) and `☕` (out for this round)
    show immediately, same dashed style as `👀`; numbers stay hidden. `☕` sits
-   the round out and drops you from the voter count. `?` keeps you in the
-   count but is not a vote.
+   the round out and drops you from the voter count. `?` keeps you in the count
+   but is not a vote.
 5. After the reveal, votes stay face-up and people can still change them while
    you discuss. The table shows the average. **Pick agreed estimate** locks
    votes; then choose the agreed card and **Save result & next ticket**.
@@ -94,8 +94,8 @@ result. The live site is <https://planning-poker.davebalmain.me>.
 
 Dependabot opens a weekly grouped PR for npm and another for GitHub Actions.
 [`.github/workflows/dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml)
-squash-merges those PRs once CI is green, so the stack does not rot. A bump
-that fails `npm run check` sits unmerged.
+squash-merges those PRs once CI is green, so the stack does not rot. A bump that
+fails `npm run check` sits unmerged.
 
 ### One-time setup
 
@@ -109,8 +109,8 @@ it**. This repo is public, so no account-specific ids are committed; note the id
 and add it as a variable instead. Local development and both test suites use
 miniflare's local D1 and need no id at all.
 
-Then add one repository **secret** and two **variables** (Settings → Secrets
-and variables → Actions, or on the `production` environment):
+Then add one repository **secret** and two **variables** (Settings → Secrets and
+variables → Actions, or on the `production` environment):
 
 | Kind     | Name                    | Value                                    |
 | -------- | ----------------------- | ---------------------------------------- |
