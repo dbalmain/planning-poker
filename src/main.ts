@@ -5,7 +5,6 @@ import {
   lastName,
   loadSeat,
   newPlayerId,
-  parseRoute,
   saveSeat,
   type ClientMsg,
   type DeckInfo,
@@ -14,6 +13,16 @@ import {
   type ServerMsg,
   type Snapshot,
 } from "./protocol.ts";
+import {
+  apiBoard,
+  apiBoardHistory,
+  apiBoards,
+  apiDecks,
+  matchRoute,
+  pageBoard,
+  pageBoardHistory,
+  wsBoard,
+} from "../shared/routes.ts";
 import "./styles/app.css";
 import { initTheme } from "./theme.ts";
 
@@ -29,12 +38,12 @@ if (!(app instanceof HTMLElement)) {
   throw new Error("#app missing");
 }
 
-const route = parseRoute(location.pathname);
-if (route.kind === "board") {
+const route = matchRoute(location.pathname);
+if (route.kind === "page_board") {
   void showBoard(app, route.boardId);
-} else if (route.kind === "history") {
+} else if (route.kind === "page_board_history") {
   void showHistory(app, route.boardId);
-} else if (route.kind === "create") {
+} else if (route.kind === "home") {
   setSiteChrome({ title: "Planning poker", titleHref: "/" });
   void showCreate(app);
 } else {
@@ -45,7 +54,7 @@ if (route.kind === "board") {
 async function showCreate(root: HTMLElement): Promise<void> {
   let decks: DeckInfo[] = [];
   try {
-    const res = await fetch("/api/decks");
+    const res = await fetch(apiDecks());
     decks = (await res.json()) as DeckInfo[];
   } catch {
     decks = [
@@ -91,7 +100,7 @@ async function showCreate(root: HTMLElement): Promise<void> {
     const deck = String(data.get("deck") ?? "fibonacci");
     void (async () => {
       err.innerHTML = "";
-      const res = await fetch("/api/boards", {
+      const res = await fetch(apiBoards(), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, deck }),
@@ -102,14 +111,14 @@ async function showCreate(root: HTMLElement): Promise<void> {
         return;
       }
       if (typeof body === "object" && body !== null && "id" in body && typeof body.id === "string") {
-        location.assign(`/b/${body.id}`);
+        location.assign(pageBoard(body.id));
       }
     })();
   });
 }
 
 async function showBoard(root: HTMLElement, id: string): Promise<void> {
-  const metaRes = await fetch(`/api/boards/${id}`);
+  const metaRes = await fetch(apiBoard(id));
   if (metaRes.status === 404) {
     setSiteChrome({ title: "Planning poker", titleHref: "/" });
     root.innerHTML = `<div class="center-msg"><h1 class="card-title">Board not found</h1><p class="muted"><a class="nav-link" href="/">Create a session</a></p></div>`;
@@ -122,8 +131,8 @@ async function showBoard(root: HTMLElement, id: string): Promise<void> {
       : "Planning session";
   setSiteChrome({
     title: boardName,
-    titleHref: `/b/${id}`,
-    historyHref: `/b/${id}/history`,
+    titleHref: pageBoard(id),
+    historyHref: pageBoardHistory(id),
   });
 
   const existing = loadSeat(id);
@@ -271,7 +280,7 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
   });
 
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  const url = `${proto}://${location.host}/ws/boards/${boardId}`;
+  const url = `${proto}://${location.host}${wsBoard(boardId)}`;
   let socket: WebSocket | null = null;
   let retries = 0;
   let closed = false;
@@ -315,8 +324,8 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
       state = msg.state;
       setSiteChrome({
         title: state.board_name,
-        titleHref: `/b/${boardId}`,
-        historyHref: `/b/${boardId}/history`,
+        titleHref: pageBoard(boardId),
+        historyHref: pageBoardHistory(boardId),
       });
       if (document.activeElement !== ticket) {
         ticket.value = state.ticket;
@@ -445,7 +454,7 @@ function renderHand(el: HTMLElement, state: Snapshot): void {
 }
 
 async function showHistory(root: HTMLElement, boardId: string): Promise<void> {
-  const res = await fetch(`/api/boards/${boardId}/history`);
+  const res = await fetch(apiBoardHistory(boardId));
   if (res.status === 404) {
     setSiteChrome({ title: "Planning poker", titleHref: "/" });
     root.innerHTML = `<div class="center-msg"><h1 class="card-title">Board not found</h1><p class="muted"><a class="nav-link" href="/">Create a session</a></p></div>`;
@@ -458,8 +467,8 @@ async function showHistory(root: HTMLElement, boardId: string): Promise<void> {
   }
   setSiteChrome({
     title: body.name,
-    titleHref: `/b/${boardId}`,
-    historyHref: `/b/${boardId}/history`,
+    titleHref: pageBoard(boardId),
+    historyHref: pageBoardHistory(boardId),
     historyCurrent: true,
   });
   const items =
@@ -483,7 +492,7 @@ async function showHistory(root: HTMLElement, boardId: string): Promise<void> {
           .join("")}</ul>`;
   root.innerHTML = `
     <div class="page">
-      <p class="history-back"><a class="nav-link" href="/b/${boardId}">← Back to table</a></p>
+      <p class="history-back"><a class="nav-link" href="${pageBoard(boardId)}">← Back to table</a></p>
       <div class="card">
         <h1 class="card-title">${escapeHtml(body.name)}</h1>
         <p class="card-meta">Saved estimates</p>
@@ -515,7 +524,7 @@ function formatWhen(iso: string): string {
 
 async function loadDecks(): Promise<DeckInfo[]> {
   try {
-    const res = await fetch("/api/decks");
+    const res = await fetch(apiDecks());
     const body: unknown = await res.json();
     if (!Array.isArray(body)) {
       return [];

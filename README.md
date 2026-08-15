@@ -1,11 +1,17 @@
 # Planning poker
 
-A small planning-poker table for a team on a VPC. Create a session, share the
-URL, people join with a display name, vote in private, reveal together, then
-save who voted what against a ticket id.
+A small planning-poker table. Create a session, share the URL, people join with
+a display name, vote in private, reveal together, then save who voted what
+against a ticket id.
 
 No accounts. The board id is 128 bits of randomness; treat the URL as the
-secret. Storage is a SQLite file on disk.
+secret.
+
+It runs on Cloudflare: a Worker serves the UI and API, a Durable Object holds
+each live table, and D1 stores saved history. A daily cron deletes sessions
+that have not been used for two weeks — history included. The current ticket
+(votes, phase, the ticket field) is not stored in D1. Saving a result keeps
+only that completed round; starting the next ticket throws the live hand away.
 
 ## How a session works
 
@@ -23,7 +29,8 @@ secret. Storage is a SQLite file on disk.
    Individual votes are stored with the agreed value. `☕` stays put if you
    vote again; number votes are cleared.
 6. Repeat for the next ticket. Open **History** (next to the theme toggle) to
-   see every saved round and who voted what.
+   see every saved round and who voted what. Unsaved work from the previous
+   ticket is gone.
 
 The deck can be changed on the table at any time. Cards that are not in the new
 deck are dropped.
@@ -33,73 +40,60 @@ T-shirt. Every deck includes `?` and `☕`.
 
 ## Run it
 
-Needs a recent Rust toolchain and Node 22+.
+Needs Node 22+.
 
 ```sh
-cd frontend
 npm install
-npm run build
-cd ..
-
-cargo run --release
-```
-
-Then open <http://127.0.0.1:3000/>.
-
-During UI work, run the API and Vite together:
-
-```sh
-cargo run
-```
-
-```sh
-cd frontend
-npm install
+npx wrangler types --include-runtime=false
+npm test
 npm run dev
 ```
 
-Vite proxies `/api` and `/ws` to `127.0.0.1:3000`.
+`npm run dev` applies the D1 migrations to the local database before starting Vite. Run `npm run db:migrate` directly when you only want to update the local database.
+
+Then open the URL Vite prints (usually <http://127.0.0.1:5173/>).
+
+## Deploy
+
+```sh
+npx wrangler login
+npx wrangler d1 create planning-poker
+```
+
+Put the printed `database_id` in `wrangler.jsonc`, then:
+
+```sh
+npm run deploy
+```
+
+Point the Worker at your hostname in the Cloudflare dashboard (or
+`wrangler.jsonc` `routes`).
+
+The cleanup cron runs daily at 04:00 UTC and deletes any session whose
+`last_used_at` is older than 14 days.
 
 ## Design system
 
 UI styles follow the shared ai-tools design system
 ([`~/w/ai-tools/style`](../ai-tools/style)):
 
-- `frontend/src/styles/tokens.css` and `frontend/src/styles/components.css`
-  are **vendored** — never edit them by hand.
+- `src/styles/tokens.css` and `src/styles/components.css` are **vendored** —
+  never edit them by hand.
 - Re-sync with:
 
   ```sh
-  ~/w/ai-tools/bin/sync-style frontend/src/styles
+  ~/w/ai-tools/bin/sync-style src/styles
   ```
 
-- App-only rules live in `frontend/src/styles/app.css` and use **tier-2
-  semantic tokens** only (`--color-*`, `--space-*`, `--font-*`, …).
+- App-only rules live in `src/styles/app.css` and use **tier-2 semantic
+  tokens** only (`--color-*`, `--space-*`, `--font-*`, …).
 - Dark mode is `data-theme="dark"` on `<html>` (sun/moon toggle in the header).
   The first visit follows `prefers-color-scheme`; after that the choice is
   stored in `localStorage`.
 
-### Environment
-
-| Variable         | Default               | Meaning                          |
-| ---------------- | --------------------- | -------------------------------- |
-| `LISTEN`         | `127.0.0.1:3000`      | Bind address                     |
-| `DATABASE_PATH`  | `planning-poker.db`   | SQLite file                      |
-| `STATIC_DIR`     | `static`              | Built frontend (`npm run build`) |
-| `RUST_LOG`       | `info`                | `tracing` filter                 |
-
-On a VPC, bind all interfaces and put the database on persistent disk:
-
-```sh
-LISTEN=0.0.0.0:3000 DATABASE_PATH=/var/lib/planning-poker/app.db cargo run --release
-```
-
 ## Checks
 
 ```sh
-cargo fmt --all
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
-
-cd frontend && npm run typecheck
+npm test
+npm run typecheck
 ```

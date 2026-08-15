@@ -1,0 +1,14 @@
+#!/bin/sh
+# NixOS's /lib64/ld-linux-x86-64.so.2 is a stub. Miniflare needs the real glibc
+# interpreter that `ldd` reports for the bundled workerd binary.
+set -eu
+bundled="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)/node_modules/@cloudflare/workerd-linux-64/bin/workerd"
+if [ ! -x "$bundled" ]; then
+  echo "workerd binary missing at $bundled" >&2
+  exit 127
+fi
+linker="$(ldd "$bundled" | sed -n 's/.*ld-linux[^ ]* => \([^ ]*\).*/\1/p' | head -n 1)"
+if [ -n "${linker:-}" ] && [ -x "$linker" ] && [ "$linker" != /lib64/ld-linux-x86-64.so.2 ]; then
+  exec "$linker" "$bundled" "$@"
+fi
+exec "$bundled" "$@"

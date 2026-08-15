@@ -1,0 +1,35 @@
+{
+  "name": "planning-poker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "npm run db:migrate",
+    "dev": "MINIFLARE_WORKERD_PATH=./scripts/workerd vite",
+    "build": "vite build",
+    "preview": "MINIFLARE_WORKERD_PATH=./scripts/workerd vite preview",
+    "db:migrate": "MINIFLARE_WORKERD_PATH=./scripts/workerd wrangler d1 migrations apply planning-poker --local",
+    "deploy": "vite build && wrangler d1 migrations apply planning-poker --remote && wrangler deploy",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
+    "test": "vitest run --config vitest.unit.config.ts && MINIFLARE_WORKERD_PATH=./scripts/workerd vitest run --config vitest.config.ts",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.13.0",
+    "@cloudflare/vitest-pool-workers": "^0.21.3",
+    "@cloudflare/workers-types": "latest",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.6",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.28.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.0": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.28.1": true,
+    "sharp@0.33.5": true,
+    "sharp@0.35.2": true,
+    "workerd@1.20251210.0": true,
+    "workerd@1.20260811.1": true
+  }
+}
