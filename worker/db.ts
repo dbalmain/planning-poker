@@ -1,7 +1,7 @@
 import { parseDeck } from "../shared/deck.ts";
 import { Errors } from "../shared/errors.ts";
 import { normalizeBoardName } from "../shared/game.ts";
-import { randomId } from "../shared/id.ts";
+import { hashId, randomId } from "../shared/id.ts";
 import type {
   BoardMeta,
   CompletedRound,
@@ -65,6 +65,15 @@ export async function setBoardDeck(
   await db.prepare("UPDATE boards SET deck = ? WHERE id = ?").bind(deck, id).run();
 }
 
+/**
+ * History row id for a round's result. Replaying the same result after a
+ * restore maps to the same row; a result changed since maps to a new one.
+ */
+export async function historyRowId(round: CompletedRound): Promise<string> {
+  return hashId(JSON.stringify([round.id, round.ticket, round.agreed, round.votes]));
+}
+
+/** Store a round once; a second insert under the same id is a no-op. */
 export async function insertRound(
   db: D1Database,
   boardId: string,
@@ -72,7 +81,7 @@ export async function insertRound(
 ): Promise<void> {
   await db
     .prepare(
-      "INSERT INTO rounds (id, board_id, ticket, agreed, votes_json, completed_at) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO rounds (id, board_id, ticket, agreed, votes_json, completed_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
     )
     .bind(
       round.id,

@@ -37,7 +37,13 @@ export type Snapshot = {
 };
 
 export type ClientMsg =
-  | { type: "join"; player_id: string; name: string; spectator: boolean }
+  | {
+      type: "join";
+      /** Never sent back out; the server derives your public id from it. */
+      secret: string;
+      name: string;
+      spectator: boolean;
+    }
   | { type: "set_ticket"; ticket: string }
   | { type: "vote"; card: string }
   | { type: "reveal" }

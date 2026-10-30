@@ -5,7 +5,7 @@ import { matchRoute } from "../shared/routes.ts";
 import { CLEANUP_BATCH_SIZE, CLEANUP_MAX_BATCHES, deleteStaleBoards } from "./cleanup.ts";
 import { createBoard, getBoard, listHistory, requireBoard, touchBoard } from "./db.ts";
 import { logInternalError } from "./log.ts";
-import { Room, withBoardMetadata } from "./room.ts";
+import { Room } from "./room.ts";
 
 export { Room };
 
@@ -93,8 +93,8 @@ async function handle(request: Request, env: Env): Promise<Response> {
   }
 
   if (route.kind === "ws_board") {
-    const board = await requireBoard(env.DB, route.boardId);
-    return env.ROOM.getByName(route.boardId).fetch(withBoardMetadata(request, board));
+    await requireBoard(env.DB, route.boardId);
+    return env.ROOM.getByName(route.boardId).fetch(request);
   }
 
   return json({ error: "not found" }, 404);

@@ -16,7 +16,7 @@ import { Board } from "../../shared/game.ts";
 
 /** Default stays in the milliseconds. `FC_NUM_RUNS=500 npm test` for a longer pass. */
 const NUM_RUNS = parseRuns(
-  (process as { env: Record<string, string | undefined> }).env.FC_NUM_RUNS,
+  (process as { env: Record<string, string | undefined> }).env["FC_NUM_RUNS"],
 );
 
 const NAMES = ["Ann", "Bo", "Cam", "Dot", "Ed"] as const;

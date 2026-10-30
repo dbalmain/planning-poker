@@ -179,6 +179,61 @@ describe("board", () => {
     expect(board.players.has(dave)).toBe(true);
   });
 
+  it("drops players disconnected before the cutoff", () => {
+    const { board, dave, sam } = seated();
+    const ann = pid(3);
+    board.join(ann, "Ann", false);
+    board.disconnect(sam, 1_000);
+    board.disconnect(ann, 3_000);
+    expect(board.dropAbsent(2_000)).toBe(true);
+    expect(board.players.has(sam)).toBe(false);
+    expect(board.players.has(ann)).toBe(true);
+    expect(board.players.has(dave)).toBe(true);
+    expect(board.dropAbsent(2_000)).toBe(false);
+  });
+
+  it("an absent player's vote survives the timeout until the round ends", () => {
+    const { board, dave, sam } = seated();
+    board.vote(dave, "13");
+    board.vote(sam, "3");
+    board.reveal();
+    board.pickEstimate(dave);
+    board.disconnect(dave, 1_000);
+    expect(board.dropAbsent(2_000)).toBe(false);
+    expect(board.snapshot(sam).average).toBe(8);
+
+    board.setTicket("X");
+    board.setEstimate(sam, "8");
+    const saved = board.buildCompletedRound(sam);
+    expect(saved.votes.map((v) => v.card).sort()).toEqual(["13", "3"]);
+    board.startNextTicket();
+    expect(board.players.has(dave)).toBe(false);
+  });
+
+  it("only absent players without a vote in play are expirable", () => {
+    const { board, dave, sam } = seated();
+    expect(board.hasExpirable()).toBe(false);
+    board.vote(sam, "5");
+    board.disconnect(sam);
+    expect(board.hasExpirable()).toBe(false);
+    board.disconnect(dave);
+    expect(board.hasExpirable()).toBe(true);
+  });
+
+  it("a round keeps its history id until it is saved, including across restore", () => {
+    const { board, dave } = seated();
+    board.vote(dave, "5");
+    board.setTicket("X");
+    board.reveal();
+    board.pickEstimate(dave);
+    board.setEstimate(dave, "5");
+    const first = board.buildCompletedRound(dave);
+    const restored = Board.fromJSON(board.toJSON());
+    expect(restored.buildCompletedRound(dave).id).toBe(first.id);
+    restored.startNextTicket();
+    expect(restored.roundId).not.toBe(first.id);
+  });
+
   it("question and coffee are visible before reveal", () => {
     const { board, dave, sam } = seated();
     board.vote(dave, "?");

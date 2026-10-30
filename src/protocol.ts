@@ -11,10 +11,11 @@ export type {
   VoteRecord,
 } from "../shared/protocol.ts";
 export { isOpenCard } from "../shared/deck.ts";
-export { isHexId as isPlayerId, randomId as newPlayerId } from "../shared/id.ts";
+export { randomId as newSeatSecret } from "../shared/id.ts";
 
+/** `secret` is the seat's only credential; the server derives the public id. */
 export type Seat = {
-  playerId: string;
+  secret: string;
   name: string;
   spectator: boolean;
 };
@@ -32,15 +33,15 @@ export function loadSeat(boardId: string): Seat | null {
     if (
       typeof parsed === "object" &&
       parsed !== null &&
-      "playerId" in parsed &&
+      "secret" in parsed &&
       "name" in parsed &&
       "spectator" in parsed &&
-      typeof parsed.playerId === "string" &&
+      typeof parsed.secret === "string" &&
       typeof parsed.name === "string" &&
       typeof parsed.spectator === "boolean"
     ) {
       return {
-        playerId: parsed.playerId,
+        secret: parsed.secret,
         name: parsed.name,
         spectator: parsed.spectator,
       };

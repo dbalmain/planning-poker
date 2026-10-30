@@ -33,6 +33,9 @@ export const Errors = {
   boardNameTooLong: () =>
     new AppError("session name is too long", ErrorStatus.BadRequest),
   invalidPlayerId: () => new AppError("invalid player id", ErrorStatus.BadRequest),
+  staleClient: () =>
+    new AppError("this page is out of date — reload it", ErrorStatus.BadRequest),
+  alreadySaving: () => new AppError("already saving this round", ErrorStatus.Conflict),
   invalidJson: () => new AppError("invalid JSON body", ErrorStatus.BadRequest),
 } as const;
 

@@ -21,6 +21,8 @@ export type Player = {
   name: string;
   spectator: boolean;
   connected: boolean;
+  /** Epoch ms of the last sign of life; meaningful only while disconnected. */
+  lastSeenAt?: number;
 };
 
 export type SerializedBoard = {
@@ -32,6 +34,8 @@ export type SerializedBoard = {
   players: Player[];
   votes: [string, string][];
   proposedEstimate: string | null;
+  /** History row id for the live round; absent on boards saved before it existed. */
+  roundId?: string;
 };
 
 export class Board {
@@ -43,6 +47,8 @@ export class Board {
   players: Map<string, Player>;
   votes: Map<string, string>;
   proposedEstimate: string | null;
+  /** Stable across retries, so saving the same round twice stores it once. */
+  roundId: string;
 
   constructor(init: {
     id: string;
@@ -53,6 +59,7 @@ export class Board {
     players?: Map<string, Player>;
     votes?: Map<string, string>;
     proposedEstimate?: string | null;
+    roundId?: string;
   }) {
     this.id = init.id;
     this.name = init.name;
@@ -62,6 +69,7 @@ export class Board {
     this.players = init.players ?? new Map<string, Player>();
     this.votes = init.votes ?? new Map<string, string>();
     this.proposedEstimate = init.proposedEstimate ?? null;
+    this.roundId = init.roundId ?? randomId();
   }
 
   static create(id: string, name: string, deck: Deck): Board {
@@ -78,6 +86,7 @@ export class Board {
       players: new Map(data.players.map((player) => [player.id, player])),
       votes: new Map(data.votes),
       proposedEstimate: data.proposedEstimate,
+      ...(data.roundId === undefined ? {} : { roundId: data.roundId }),
     });
   }
 
@@ -91,6 +100,7 @@ export class Board {
       players: [...this.players.values()],
       votes: [...this.votes.entries()],
       proposedEstimate: this.proposedEstimate,
+      roundId: this.roundId,
     };
   }
 
@@ -116,11 +126,38 @@ export class Board {
     });
   }
 
-  disconnect(playerId: string): void {
+  disconnect(playerId: string, lastSeenAt = Date.now()): void {
     const player = this.players.get(playerId);
     if (player) {
       player.connected = false;
+      player.lastSeenAt = lastSeenAt;
     }
+  }
+
+  /**
+   * Remove disconnected players last seen before `cutoff` (epoch ms). A vote
+   * still in play keeps its owner until the round ends.
+   */
+  dropAbsent(cutoff: number): boolean {
+    let dropped = false;
+    for (const [id, player] of this.players) {
+      if (!player.connected && !this.votes.has(id) && (player.lastSeenAt ?? 0) < cutoff) {
+        this.players.delete(id);
+        this.votes.delete(id);
+        dropped = true;
+      }
+    }
+    return dropped;
+  }
+
+  /** Whether `dropAbsent` could ever remove someone as the board stands. */
+  hasExpirable(): boolean {
+    for (const [id, player] of this.players) {
+      if (!player.connected && !this.votes.has(id)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   setTicket(ticket: string): void {
@@ -205,7 +242,7 @@ export class Board {
       throw Errors.noEstimate();
     }
     return {
-      id: randomId(),
+      id: this.roundId,
       ticket,
       agreed: this.proposedEstimate,
       votes: this.voterRecords(),
@@ -345,6 +382,7 @@ export class Board {
     this.votes.clear();
     this.proposedEstimate = null;
     this.phase = "voting";
+    this.roundId = randomId();
   }
 
   private pruneDisconnected(): void {

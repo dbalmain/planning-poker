@@ -4,7 +4,7 @@ import {
   isVoter,
   lastName,
   loadSeat,
-  newPlayerId,
+  newSeatSecret,
   saveSeat,
   type ClientMsg,
   type DeckInfo,
@@ -23,6 +23,7 @@ import {
   pageBoardHistory,
   wsBoard,
 } from "../shared/routes.ts";
+import { HEARTBEAT_INTERVAL_MS, JOIN_REFUSED, PING, PONG } from "../shared/ttl.ts";
 import "./styles/app.css";
 import { initTheme } from "./theme.ts";
 
@@ -194,7 +195,7 @@ function showJoin(
       return;
     }
     onJoin({
-      playerId: newPlayerId(),
+      secret: newSeatSecret(),
       name,
       spectator: data.get("spectator") === "on",
     });
@@ -305,6 +306,31 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
   let socket: WebSocket | null = null;
   let retries = 0;
   let closed = false;
+  let lastHeard = Date.now();
+
+  // A connection that has stopped answering pings is dead even if the browser
+  // still calls it open; drop it and reconnect.
+  const checkAlive = (): void => {
+    if (!socket || socket.readyState > WebSocket.OPEN) {
+      return;
+    }
+    if (Date.now() - lastHeard > 3 * HEARTBEAT_INTERVAL_MS) {
+      const stale = socket;
+      socket = null;
+      stale.close();
+      connect();
+      return;
+    }
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(PING);
+    }
+  };
+  window.setInterval(checkAlive, HEARTBEAT_INTERVAL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      checkAlive();
+    }
+  });
 
   const send = (msg: ClientMsg): void => {
     if (socket?.readyState === WebSocket.OPEN) {
@@ -322,18 +348,22 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
     if (closed) {
       return;
     }
-    socket = new WebSocket(url);
-    socket.addEventListener("open", () => {
+    const ws = new WebSocket(url);
+    socket = ws;
+    lastHeard = Date.now();
+    ws.addEventListener("open", () => {
       retries = 0;
+      lastHeard = Date.now();
       send({
         type: "join",
-        player_id: seat.playerId,
+        secret: seat.secret,
         name: seat.name,
         spectator: seat.spectator,
       });
     });
-    socket.addEventListener("message", (event) => {
-      if (typeof event.data !== "string") {
+    ws.addEventListener("message", (event) => {
+      lastHeard = Date.now();
+      if (typeof event.data !== "string" || event.data === PONG) {
         return;
       }
       const msg = JSON.parse(event.data) as ServerMsg;
@@ -358,7 +388,10 @@ function mountTable(root: HTMLElement, boardId: string, seat: Seat): void {
       renderActions(actions, state);
       renderHand(hand, state);
     });
-    socket.addEventListener("close", () => {
+    ws.addEventListener("close", (event) => {
+      if (socket !== ws || event.code === JOIN_REFUSED) {
+        return;
+      }
       retries += 1;
       const wait = Math.min(4000, 300 * retries);
       window.setTimeout(connect, wait);

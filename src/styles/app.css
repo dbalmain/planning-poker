@@ -273,6 +273,7 @@ select.input {
   background: var(--color-surface-sunk);
   border: 2px solid var(--color-border);
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   font-weight: var(--weight-bold);
   font-size: var(--font-size-0);
@@ -313,6 +314,7 @@ select.input {
 
 .card-btn {
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   width: 3.5rem;
   height: 5rem;
@@ -357,6 +359,8 @@ select.input {
 .coffee,
 .question,
 .eye {
+  /* Emoji fonts differ in width; a glyph wider than the card overflows evenly. */
+  place-self: unsafe center;
   display: block;
   line-height: 1;
   pointer-events: none;
