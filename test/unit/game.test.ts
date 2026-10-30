@@ -210,6 +210,23 @@ describe("board", () => {
     expect(board.players.has(dave)).toBe(false);
   });
 
+  it("absent ? and ☕ voters expire like players who never voted", () => {
+    const { board, dave, sam } = seated();
+    const ann = pid(3);
+    board.join(ann, "Ann", false);
+    board.vote(dave, "?");
+    board.vote(sam, "☕");
+    board.vote(ann, "5");
+    board.disconnect(dave, 1_000);
+    board.disconnect(sam, 1_000);
+    board.disconnect(ann, 1_000);
+    expect(board.hasExpirable()).toBe(true);
+    expect(board.dropAbsent(2_000)).toBe(true);
+    expect([...board.players.keys()]).toEqual([ann]);
+    expect(board.votes.has(dave)).toBe(false);
+    expect(board.votes.has(sam)).toBe(false);
+  });
+
   it("only absent players without a vote in play are expirable", () => {
     const { board, dave, sam } = seated();
     expect(board.hasExpirable()).toBe(false);

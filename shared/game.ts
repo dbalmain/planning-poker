@@ -135,13 +135,18 @@ export class Board {
   }
 
   /**
-   * Remove disconnected players last seen before `cutoff` (epoch ms). A vote
-   * still in play keeps its owner until the round ends.
+   * Remove disconnected players last seen before `cutoff` (epoch ms). An
+   * estimate still in play keeps its owner until the round ends; `?` and `☕`
+   * don't, since they never count toward the result.
    */
   dropAbsent(cutoff: number): boolean {
     let dropped = false;
     for (const [id, player] of this.players) {
-      if (!player.connected && !this.votes.has(id) && (player.lastSeenAt ?? 0) < cutoff) {
+      if (
+        !player.connected &&
+        !this.hasEstimate(id) &&
+        (player.lastSeenAt ?? 0) < cutoff
+      ) {
         this.players.delete(id);
         this.votes.delete(id);
         dropped = true;
@@ -153,7 +158,7 @@ export class Board {
   /** Whether `dropAbsent` could ever remove someone as the board stands. */
   hasExpirable(): boolean {
     for (const [id, player] of this.players) {
-      if (!player.connected && !this.votes.has(id)) {
+      if (!player.connected && !this.hasEstimate(id)) {
         return true;
       }
     }
@@ -392,6 +397,11 @@ export class Board {
         this.votes.delete(id);
       }
     }
+  }
+
+  private hasEstimate(playerId: string): boolean {
+    const card = this.votes.get(playerId);
+    return card !== undefined && !isOpenCard(card);
   }
 
   private requirePlayer(playerId: string): void {
